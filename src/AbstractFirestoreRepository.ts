@@ -1,36 +1,36 @@
-import { plainToClass } from 'class-transformer';
 import {
+  CollectionReference,
   DocumentSnapshot,
   QuerySnapshot,
-  CollectionReference,
   Transaction,
 } from '@google-cloud/firestore';
+import { plainToClass } from 'class-transformer';
 import { serializeKey } from './Decorators/Serialize';
 import { ValidationError } from './Errors/ValidationError';
 
 import {
-  IEntity,
-  IQueryBuilder,
-  IWherePropParam,
-  IFirestoreVal,
-  IFireOrmQueryLine,
-  IOrderByParams,
-  IRepository,
-  PartialBy,
-  IEntityConstructor,
-  ITransactionReferenceStorage,
   ICustomQuery,
+  IEntity,
+  IEntityConstructor,
+  IFireOrmQueryLine,
+  IFirestoreVal,
+  IOrderByParams,
+  IQueryBuilder,
+  IRepository,
+  ITransactionReferenceStorage,
+  IWherePropParam,
+  PartialBy,
 } from './types';
 
 import { isDocumentReference, isGeoPoint, isObject, isTimestamp } from './TypeGuards';
 
+import { FullCollectionMetadata, MetadataStorageConfig } from './MetadataStorage';
 import { getMetadataStorage } from './MetadataUtils';
-import { MetadataStorageConfig, FullCollectionMetadata } from './MetadataStorage';
 
 import { BaseRepository } from './BaseRepository';
+import { NoMetadataError } from './Errors';
 import { QueryBuilder } from './QueryBuilder';
 import { serializeEntity } from './utils';
-import { NoMetadataError } from './Errors';
 
 export abstract class AbstractFirestoreRepository<T extends IEntity>
   extends BaseRepository
@@ -413,25 +413,15 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
    * @returns {Promise<ValidationError[]>} An array of class-validator errors
    */
   async validate(item: T): Promise<ValidationError[]> {
-    try {
-      const classValidator = await import('class-validator');
-      const { entityConstructor: Entity } = this.colMetadata;
+    const classValidator = await import('class-validator');
+    const { entityConstructor: Entity } = this.colMetadata;
 
-      /**
-       * Instantiate plain objects into an entity class
-       */
-      const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
+    /**
+     * Instantiate plain objects into an entity class
+     */
+    const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
 
-      return classValidator.validate(entity, this.config.validatorOptions);
-    } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        throw new Error(
-          'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
-        );
-      }
-
-      throw error;
-    }
+    return classValidator.validate(entity, this.config.validatorOptions);
   }
 
   /**
