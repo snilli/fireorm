@@ -66,9 +66,8 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     serializeEntity(obj, this.colMetadata.subCollections);
 
   protected transformFirestoreTypes = (obj: Record<string, unknown>) => {
-    Object.keys(obj).forEach(key => {
-      const val = obj[key];
-      if (!obj[key]) return;
+    for (const [key, val] of Object.entries(obj)) {
+      if (!val) continue;
       if (isTimestamp(val)) {
         obj[key] = val.toDate();
       } else if (isGeoPoint(val)) {
@@ -80,7 +79,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
       } else if (isObject(val)) {
         this.transformFirestoreTypes(val);
       }
-    });
+    }
     return obj;
   };
 
@@ -95,7 +94,8 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { FirestoreTransaction } = require('./Transaction/FirestoreTransaction');
 
-    this.colMetadata.subCollections.forEach(subCol => {
+    const subCollections: Record<string, IRepository<IEntity>> = {};
+    for (const subCol of this.colMetadata.subCollections) {
       const pathWithSubCol = `${this.path}/${entity.id}/${subCol.name}`;
       const { propertyKey } = subCol;
 
@@ -104,19 +104,16 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
         const firestoreTransaction = new FirestoreTransaction(tran, tranRefStorage);
         const repository = firestoreTransaction.getRepository(pathWithSubCol);
         tranRefStorage.add({ propertyKey, path: pathWithSubCol, entity });
-        Object.assign(entity, {
-          [propertyKey]: repository,
-        });
+        subCollections[propertyKey] = repository;
       } else {
-        Object.assign(entity, {
-          [propertyKey]: getRepository(pathWithSubCol),
-        });
+        subCollections[propertyKey] = getRepository(pathWithSubCol);
       }
-    });
+    }
+    entity = { ...entity, ...subCollections };
   };
 
   protected initializeSerializedObjects(entity: T) {
-    Object.keys(entity).forEach(propertyKey => {
+    for (const propertyKey in entity) {
       if (Reflect.getMetadata(serializeKey, entity, propertyKey) !== undefined) {
         const constructor = Reflect.getMetadata(serializeKey, entity, propertyKey);
         const data = entity as unknown as { [k: string]: unknown };
@@ -146,7 +143,7 @@ export abstract class AbstractFirestoreRepository<T extends IEntity>
           (entity as unknown as { [key: string]: unknown })[propertyKey] = subEntity;
         }
       }
-    });
+    }
   }
 
   protected extractTFromDocSnap = (
