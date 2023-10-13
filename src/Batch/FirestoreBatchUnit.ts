@@ -1,8 +1,8 @@
-import { Firestore, DocumentReference } from '@google-cloud/firestore';
-import { serializeEntity } from '../utils';
-import type { FullCollectionMetadata } from '../MetadataStorage';
+import { DocumentReference, Firestore } from '@google-cloud/firestore';
 import type { ValidationError } from '../Errors/ValidationError';
-import type { IEntity, Constructor, ValidatorOptions } from '../types';
+import type { FullCollectionMetadata } from '../MetadataStorage';
+import type { Constructor, IEntity, ValidatorOptions } from '../types';
+import { serializeEntity } from '../utils';
 
 type BatchOperation<T extends IEntity> = {
   type: 'create' | 'update' | 'delete';
@@ -66,13 +66,13 @@ export class FirestoreBatchUnit {
 
       switch (op.type) {
         case 'create':
-          batch.set(op.ref, serialized);
+          batch.set(op.ref, serialized as Partial<IEntity>);
           break;
         case 'update':
-          batch.update(op.ref, serialized);
+          batch.update(op.ref, serialized as Partial<IEntity>);
           break;
         case 'delete':
-          batch.delete(op.ref, serialized);
+          batch.delete(op.ref);
           break;
       }
     }
@@ -89,23 +89,13 @@ export class FirestoreBatchUnit {
     Entity: Constructor<IEntity>,
     validatorOptions?: ValidatorOptions
   ): Promise<ValidationError[]> {
-    try {
-      const classValidator = await import('class-validator');
+    const classValidator = await import('class-validator');
 
-      /**
-       * Instantiate plain objects into an entity class
-       */
-      const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
+    /**
+     * Instantiate plain objects into an entity class
+     */
+    const entity = item instanceof Entity ? item : Object.assign(new Entity(), item);
 
-      return classValidator.validate(entity, validatorOptions);
-    } catch (error) {
-      if (error.code === 'MODULE_NOT_FOUND') {
-        throw new Error(
-          'It looks like class-validator is not installed. Please run `npm i -S class-validator` to fix this error, or initialize FireORM with `validateModels: false` to disable validation.'
-        );
-      }
-
-      throw error;
-    }
+    return classValidator.validate(entity, validatorOptions);
   }
 }

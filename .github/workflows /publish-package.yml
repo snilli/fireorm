@@ -1,0 +1,58 @@
+name: Publish Package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+    publish:
+        name: Setup Gcloud Account
+        runs-on: ubuntu-latest
+        env:
+          WEB_IMAGE_NAME: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sweet/${{ secrets.GCP_WEB_APP_NAME }}
+          CMS_HEADLESS_IMAGE_NAME: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/sweet/${{ secrets.GCP_CMS_HEADLESS_APP_NAME }}
+
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v4
+
+        - name: Extract version
+          id: extract_version
+          uses: Saionaro/extract-package-version@v1.2.1
+          with:
+            path: apps/cms-headless
+
+        - name: Install Node.js
+          uses: actions/setup-node@v3
+          with:
+            node-version: 18
+
+        - name: 'Set up pnpm'
+          uses: pnpm/action-setup@v2
+          with:
+            version: 8
+            run_install: false
+
+        - name: Get pnpm store directory
+          shell: bash
+          run: |
+            echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+        - uses: actions/cache@v3
+          name: Setup pnpm cache
+          with:
+            path: ${{ env.STORE_PATH }}
+            key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+            restore-keys: |
+              ${{ runner.os }}-pnpm-store-
+
+        - name: Install dependencies
+          run: pnpm install
+
+        - name: Build packages
+          run: pnpm build
+
+        - name: Publish packages
+          run: pnpm publish

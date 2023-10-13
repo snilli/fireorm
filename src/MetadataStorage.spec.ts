@@ -1,9 +1,9 @@
-import { MetadataStorage, CollectionMetadata, RepositoryMetadata } from './MetadataStorage';
 import { BaseFirestoreRepository } from './BaseFirestoreRepository';
-import { IRepository, Constructor } from './types';
+import { CollectionMetadata, MetadataStorage, RepositoryMetadata } from './MetadataStorage';
+import { Constructor, IRepository } from './types';
 
 describe('MetadataStorage', () => {
-  let metadataStorage: MetadataStorage = undefined;
+  let metadataStorage: MetadataStorage;
   class Entity {
     id: string;
   }
@@ -49,19 +49,19 @@ describe('MetadataStorage', () => {
     it('should get Collection by string', () => {
       const entityMetadata = metadataStorage.getCollection('entity');
 
-      expect(entityMetadata.entityConstructor).toEqual(col.entityConstructor);
-      expect(entityMetadata.name).toEqual(col.name);
-      expect(entityMetadata.segments).toEqual(['entity']);
-      expect(entityMetadata.subCollections.length).toEqual(1);
+      expect(entityMetadata?.entityConstructor).toEqual(col.entityConstructor);
+      expect(entityMetadata?.name).toEqual(col.name);
+      expect(entityMetadata?.segments).toEqual(['entity']);
+      expect(entityMetadata?.subCollections.length).toEqual(1);
     });
 
     it('should get Collection by constructor', () => {
       const entityMetadata = metadataStorage.getCollection(Entity);
 
-      expect(entityMetadata.entityConstructor).toEqual(col.entityConstructor);
-      expect(entityMetadata.name).toEqual(col.name);
-      expect(entityMetadata.segments).toEqual(['entity']);
-      expect(entityMetadata.subCollections.length).toEqual(1);
+      expect(entityMetadata?.entityConstructor).toEqual(col.entityConstructor);
+      expect(entityMetadata?.name).toEqual(col.name);
+      expect(entityMetadata?.segments).toEqual(['entity']);
+      expect(entityMetadata?.subCollections.length).toEqual(1);
     });
 
     it('should get SubCollection by string', () => {
@@ -69,19 +69,19 @@ describe('MetadataStorage', () => {
         'entity/entity-id/subEntity/subEntity-id/subSubEntity'
       );
 
-      expect(entityMetadata.entityConstructor).toEqual(subSubCol.entityConstructor);
-      expect(entityMetadata.name).toEqual(subSubCol.name);
-      expect(entityMetadata.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
-      expect(entityMetadata.subCollections.length).toEqual(0);
+      expect(entityMetadata?.entityConstructor).toEqual(subSubCol.entityConstructor);
+      expect(entityMetadata?.name).toEqual(subSubCol.name);
+      expect(entityMetadata?.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
+      expect(entityMetadata?.subCollections.length).toEqual(0);
     });
 
     it('should get SubCollection by constructor', () => {
       const entityMetadata = metadataStorage.getCollection(subSubCol.entityConstructor);
 
-      expect(entityMetadata.entityConstructor).toEqual(subSubCol.entityConstructor);
-      expect(entityMetadata.name).toEqual(subSubCol.name);
-      expect(entityMetadata.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
-      expect(entityMetadata.subCollections.length).toEqual(0);
+      expect(entityMetadata?.entityConstructor).toEqual(subSubCol.entityConstructor);
+      expect(entityMetadata?.name).toEqual(subSubCol.name);
+      expect(entityMetadata?.segments).toEqual(['entity', 'subEntity', 'subSubEntity']);
+      expect(entityMetadata?.subCollections.length).toEqual(0);
     });
 
     it('should return null when using invalid collection path', () => {
@@ -108,9 +108,9 @@ describe('MetadataStorage', () => {
     it('should initialize subcollection metadata', () => {
       const entityMetadata = metadataStorage.getCollection('entity');
 
-      expect(entityMetadata.subCollections.length).toEqual(1);
-      expect(entityMetadata.subCollections[0].entityConstructor).toEqual(subCol.entityConstructor);
-      expect(entityMetadata.subCollections[0].segments).toEqual(['entity', 'subEntity']);
+      expect(entityMetadata?.subCollections.length).toEqual(1);
+      expect(entityMetadata?.subCollections[0].entityConstructor).toEqual(subCol.entityConstructor);
+      expect(entityMetadata?.subCollections[0].segments).toEqual(['entity', 'subEntity']);
     });
 
     it('should throw error if initialized with an incomplete path', () => {
@@ -127,11 +127,11 @@ describe('MetadataStorage', () => {
         c => c.entityConstructor === col.entityConstructor
       );
 
-      expect(collection.entityConstructor).toEqual(col.entityConstructor);
-      expect(collection.name).toEqual(col.name);
-      expect(collection.parentEntityConstructor).toEqual(col.parentEntityConstructor);
-      expect(collection.propertyKey).toEqual(col.propertyKey);
-      expect(collection.segments).toEqual([col.name]);
+      expect(collection?.entityConstructor).toEqual(col.entityConstructor);
+      expect(collection?.name).toEqual(col.name);
+      expect(collection?.parentEntityConstructor).toEqual(col.parentEntityConstructor);
+      expect(collection?.propertyKey).toEqual(col.propertyKey);
+      expect(collection?.segments).toEqual([col.name]);
     });
 
     it('should throw when trying to store duplicate collections', () => {
@@ -152,7 +152,7 @@ describe('MetadataStorage', () => {
         c => c.entityConstructor === subSubCol.entityConstructor
       );
 
-      expect(collection.segments).toEqual([col.name, subCol.name, subSubCol.name]);
+      expect(collection?.segments).toEqual([col.name, subCol.name, subSubCol.name]);
     });
   });
 
@@ -171,8 +171,8 @@ describe('MetadataStorage', () => {
     it('should get repositories', () => {
       const repo = metadataStorage.getRepository(Entity);
 
-      expect(repo.entity).toEqual(entityRepository.entity);
-      expect(repo.target).toEqual(entityRepository.target);
+      expect(repo?.entity).toEqual(entityRepository.entity);
+      expect(repo?.target).toEqual(entityRepository.target);
     });
 
     it('should return null for invalid repositories', () => {

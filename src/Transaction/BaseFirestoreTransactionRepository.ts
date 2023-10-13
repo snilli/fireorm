@@ -1,13 +1,13 @@
 import { Query, Transaction, WhereFilterOp } from '@google-cloud/firestore';
 
 import {
+  EntityConstructorOrPath,
   IEntity,
   IFireOrmQueryLine,
-  WithOptionalId,
   IQueryBuilder,
-  ITransactionRepository,
-  EntityConstructorOrPath,
   ITransactionReferenceStorage,
+  ITransactionRepository,
+  WithOptionalId,
 } from '../types';
 
 import { AbstractFirestoreRepository } from '../AbstractFirestoreRepository';
@@ -77,7 +77,7 @@ export class TransactionRepository<T extends IEntity>
     }
 
     const query = this.firestoreColRef.doc(item.id);
-    this.transaction.update(query, this.toSerializableObject(item));
+    this.transaction.update(query, this.toSerializableObject(item) as never);
 
     return item;
   }
