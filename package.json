@@ -1,7 +1,7 @@
 {
   "name": "@snilli/fireorm",
   "description": "ORM for Firestore",
-  "version": "0.0.1-development",
+  "version": "0.0.2-development",
   "author": "SNilli <mklx1319@gmail.com>",
   "license": "ISC",
   "main": "lib/src/index.js",
