@@ -43,7 +43,7 @@ export class FirestoreBatchUnit {
     }
 
     if (this.operations.length === 0) {
-      throw new Error('Cannot commit a batch with zero operations');
+      return undefined;
     }
 
     this.status = 'committing';

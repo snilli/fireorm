@@ -1,9 +1,9 @@
 import { Firestore } from '@google-cloud/firestore';
 import { BaseRepository } from './BaseRepository';
 import type {
-  IEntityConstructor,
   Constructor,
   IEntity,
+  IEntityConstructor,
   IEntityRepositoryConstructor,
   ValidatorOptions,
 } from './types';
